@@ -1,5 +1,5 @@
 import { GraphQLServer } from 'graphql-yoga'
-import uuidv4 from 'uuid/v4'
+import uuid from 'uuid'
 // Type definitions (schema)
 // Tipos de datos - Scalar types - String, Boolean, Int, Float (numeros decimales), ID
 const comments = [
@@ -182,10 +182,7 @@ const resolvers = {
       }
       const post = {
         id: uuidv4(),
-        title: args.title,
-        body: args.body,
-        published: args.published,
-        author: args.author,
+        ...args,
       }
 
       posts.push(post)
@@ -203,9 +200,7 @@ const resolvers = {
 
       const comment = {
         id: uuidv4(),
-        text: args.text,
-        author: args.author,
-        post: args.post,
+        ...args,
       }
 
       comments.push(comment)
@@ -258,4 +253,4 @@ const server = new GraphQLServer({
 })
 
 // inicia el servidor con un callback que corre cuando el servidor ya esta corriendo
-server.start('the server is running')
+server.start(console.log('The server is running in port 4000'))
