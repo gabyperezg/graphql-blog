@@ -1,5 +1,5 @@
-import { GraphQLServer } from 'graphql-yoga' // se importa para poder levantar el servidor
-
+import { GraphQLServer } from 'graphql-yoga'
+import uuidv4 from 'uuid/v4'
 // Type definitions (schema)
 // Tipos de datos - Scalar types - String, Boolean, Int, Float (numeros decimales), ID
 const comments = [
@@ -77,6 +77,12 @@ const typeDefs = `
         comments(query: String): [Comment]!
     }
 
+    type Mutation{
+        createUser(name: String!, email: String): User!
+        createPost(title: String!, body: String!, published: Boolean!, author: ID!): Post!
+        createComment(text: String!, author: ID!, post: ID!): Comment!
+    }
+
     type User {
       name: String!
       id: ID!
@@ -151,6 +157,60 @@ const resolvers = {
       } else {
         return comments
       }
+    },
+  },
+  Mutation: {
+    createUser(parent, args, ctx, info) {
+      const emailTaken = users.some((user) => user.email === args.email)
+      if (emailTaken) {
+        throw new Error('Email is taken')
+      }
+      const user = {
+        id: uuidv4(),
+        name: args.name,
+        email: args.email,
+      }
+
+      users.push(user)
+
+      return user
+    },
+    createPost(parent, args, ctx, info) {
+      const userExists = users.some((user) => user.id === args.author)
+      if (!userExists) {
+        throw new Error('User not found')
+      }
+      const post = {
+        id: uuidv4(),
+        title: args.title,
+        body: args.body,
+        published: args.published,
+        author: args.author,
+      }
+
+      posts.push(post)
+
+      return post
+    },
+    createComment(parent, args, ctx, info) {
+      const userExists = users.some((user) => user.id === args.author)
+      const postExists = posts.some(
+        (post) => post.id === args.post && post.published
+      )
+      if (!postExists || !userExists) {
+        throw new Error('Post or user not found')
+      }
+
+      const comment = {
+        id: uuidv4(),
+        text: args.text,
+        author: args.author,
+        post: args.post,
+      }
+
+      comments.push(comment)
+
+      return comment
     },
   },
   Post: {
