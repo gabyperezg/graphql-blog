@@ -7,16 +7,19 @@ const comments = [
     text: 'This is comment 1 ',
     id: 11,
     author: 1,
+    post: 1,
   },
   {
     text: 'This is comment 2 ',
     id: 12,
     author: 2,
+    post: 2,
   },
   {
     text: 'This is comment 3 ',
     id: 13,
     author: 3,
+    post: 3,
   },
 ]
 
@@ -44,7 +47,7 @@ const posts = [
     body: 'Body super post 1',
     published: true,
     author: 1,
-    comment: 11
+    comment: 11,
   },
   {
     id: 2,
@@ -52,7 +55,7 @@ const posts = [
     body: 'Body post 2',
     published: true,
     author: 2,
-    comment: 12
+    comment: 12,
   },
   {
     id: 3,
@@ -60,7 +63,7 @@ const posts = [
     body: 'Body post 3',
     published: false,
     author: 3,
-    comment 13
+    comment: 13,
   },
 ]
 
@@ -95,6 +98,7 @@ const typeDefs = `
       text: String!
       id: ID!
       author: User!
+      post: Post!
     }
 `
 
@@ -156,8 +160,10 @@ const resolvers = {
       })
     },
     comments(parent, args, ctx, info) {
-      
-    }
+      return comments.filter((comment) => {
+        return parent.id === comment.post
+      })
+    },
   },
   User: {
     posts(parent, args, ctx, info) {
@@ -175,6 +181,11 @@ const resolvers = {
     author(parent, args, ctx, info) {
       return users.find((user) => {
         return parent.author === user.id
+      })
+    },
+    post(parent, args, ctx, info) {
+      return posts.find((post) => {
+        return parent.post === post.id
       })
     },
   },
