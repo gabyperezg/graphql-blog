@@ -1,5 +1,5 @@
 import { GraphQLServer } from 'graphql-yoga'
-import uuid from 'uuid'
+import uuid from 'uuid/v4'
 // Type definitions (schema)
 // Tipos de datos - Scalar types - String, Boolean, Int, Float (numeros decimales), ID
 const comments = [
@@ -27,26 +27,26 @@ const users = [
   {
     name: 'Gaby',
     age: '30',
-    id: 1,
+    id: '1',
   },
   {
     name: 'Gina',
     age: '34',
-    id: 2,
+    id: '2',
   },
   {
     name: 'Sebas',
     age: '23',
-    id: 3,
+    id: '3',
   },
 ]
 const posts = [
   {
-    id: 1,
+    id: '1',
     title: 'Post 1',
     body: 'Body super post 1',
     published: true,
-    author: 1,
+    author: '1',
     comment: 11,
   },
   {
@@ -78,9 +78,30 @@ const typeDefs = `
     }
 
     type Mutation{
-        createUser(name: String!, email: String): User!
-        createPost(title: String!, body: String!, published: Boolean!, author: ID!): Post!
-        createComment(text: String!, author: ID!, post: ID!): Comment!
+        createUser(data: CreateUserInput!): User!
+        createPost(post: CreatePostInput!): Post!
+        createComment(comment: CreateCommentInput!): Comment!
+        deleteUser(id: ID!): User!
+        deletePost(id: ID!): Post!
+        deleteComment(id: ID!): Comment!
+    }
+
+    input CreateUserInput {
+      name: String!
+      email: String
+    }
+
+    input CreatePostInput {
+      title: String!
+      body: String!
+      published: Boolean!
+      author: ID!
+    }
+
+    input CreateCommentInput {
+      text: String!
+      author: ID!
+      post: ID!
     }
 
     type User {
@@ -161,14 +182,13 @@ const resolvers = {
   },
   Mutation: {
     createUser(parent, args, ctx, info) {
-      const emailTaken = users.some((user) => user.email === args.email)
+      const emailTaken = users.some((user) => user.email === args.data.email)
       if (emailTaken) {
         throw new Error('Email is taken')
       }
       const user = {
-        id: uuidv4(),
-        name: args.name,
-        email: args.email,
+        id: uuid(),
+        ...args.data,
       }
 
       users.push(user)
@@ -176,13 +196,16 @@ const resolvers = {
       return user
     },
     createPost(parent, args, ctx, info) {
-      const userExists = users.some((user) => user.id === args.author)
+      console.log('author', args.post.author)
+      console.log(users)
+
+      const userExists = users.some((user) => user.id === args.post.author)
       if (!userExists) {
         throw new Error('User not found')
       }
       const post = {
-        id: uuidv4(),
-        ...args,
+        id: uuid(),
+        ...args.post,
       }
 
       posts.push(post)
@@ -190,22 +213,33 @@ const resolvers = {
       return post
     },
     createComment(parent, args, ctx, info) {
-      const userExists = users.some((user) => user.id === args.author)
+      const userExists = users.some((user) => user.id === args.comment.author)
       const postExists = posts.some(
-        (post) => post.id === args.post && post.published
+        (post) => post.id === args.comment.post && post.published
       )
       if (!postExists || !userExists) {
         throw new Error('Post or user not found')
       }
 
       const comment = {
-        id: uuidv4(),
-        ...args,
+        id: uuid(),
+        ...args.comment,
       }
 
       comments.push(comment)
 
       return comment
+    },
+    deleteUser(parent, args, ctx, info) {
+      const userIndex = users.findIndex((user) => user.id === args.id)
+
+      if (!userIdex) {
+        throw new Error()
+      }
+
+      const deletedUsers = users.splice.apply(userIndex, 1)
+
+      return deletedUsers
     },
   },
   Post: {
