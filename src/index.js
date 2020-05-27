@@ -2,7 +2,7 @@ import { GraphQLServer } from 'graphql-yoga'
 import uuid from 'uuid/v4'
 // Type definitions (schema)
 // Tipos de datos - Scalar types - String, Boolean, Int, Float (numeros decimales), ID
-const comments = [
+let comments = [
   {
     text: 'This is comment 1 ',
     id: 11,
@@ -23,7 +23,7 @@ const comments = [
   },
 ]
 
-const users = [
+let users = [
   {
     name: 'Gaby',
     age: '30',
@@ -40,7 +40,7 @@ const users = [
     id: '3',
   },
 ]
-const posts = [
+let posts = [
   {
     id: '1',
     title: 'Post 1',
@@ -237,9 +237,21 @@ const resolvers = {
         throw new Error()
       }
 
-      const deletedUsers = users.splice.apply(userIndex, 1)
+      const deletedUsers = users.splice(userIndex, 1)
 
-      return deletedUsers
+      posts = posts.filter((post) => {
+        const match = post.author === args.id
+
+        if (mastch) {
+          comments = comments.filter((comment) => comment.post !== post.id)
+        }
+
+        comments = comments.filter((comment) => comment.author !== args.id)
+
+        return !match
+      })
+
+      return deletedUsers[0]
     },
   },
   Post: {
