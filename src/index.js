@@ -5,7 +5,7 @@ import uuid from 'uuid/v4'
 let comments = [
   {
     text: 'This is comment 1 ',
-    id: 11,
+    id: '11',
     author: 1,
     post: 1,
   },
@@ -47,7 +47,7 @@ let posts = [
     body: 'Body super post 1',
     published: true,
     author: '1',
-    comment: 11,
+    comment: '11',
   },
   {
     id: 2,
@@ -66,68 +66,6 @@ let posts = [
     comment: 13,
   },
 ]
-
-const typeDefs = `
-    type Query {
-        me: User!
-        post: Post!
-        add(a: Int!, b: Int!): Int!
-        users(query: String): [User!]
-        posts(query: String): [Post]!
-        comments(query: String): [Comment]!
-    }
-
-    type Mutation{
-        createUser(data: CreateUserInput!): User!
-        createPost(post: CreatePostInput!): Post!
-        createComment(comment: CreateCommentInput!): Comment!
-        deleteUser(id: ID!): User!
-        deletePost(id: ID!): Post!
-        deleteComment(id: ID!): Comment!
-    }
-
-    input CreateUserInput {
-      name: String!
-      email: String
-    }
-
-    input CreatePostInput {
-      title: String!
-      body: String!
-      published: Boolean!
-      author: ID!
-    }
-
-    input CreateCommentInput {
-      text: String!
-      author: ID!
-      post: ID!
-    }
-
-    type User {
-      name: String!
-      id: ID!
-      email: String
-      posts: [Post!]
-      comments: [Comment!]
-    }
-
-    type Post {
-      title: String!
-      id: ID!
-      body: String!
-      published: Boolean!
-      author: User!
-      comments: [Comment!]
-    }
-
-    type Comment {
-      text: String!
-      id: ID!
-      author: User!
-      post: Post!
-    }
-`
 
 // Resolvers
 const resolvers = {
@@ -234,7 +172,7 @@ const resolvers = {
       const userIndex = users.findIndex((user) => user.id === args.id)
 
       if (!userIdex) {
-        throw new Error()
+        throw new Error('User Not Found')
       }
 
       const deletedUsers = users.splice(userIndex, 1)
@@ -242,7 +180,7 @@ const resolvers = {
       posts = posts.filter((post) => {
         const match = post.author === args.id
 
-        if (mastch) {
+        if (match) {
           comments = comments.filter((comment) => comment.post !== post.id)
         }
 
@@ -252,6 +190,32 @@ const resolvers = {
       })
 
       return deletedUsers[0]
+    },
+    deletePost(parent, args, ctx, info) {
+      const postIndex = posts.findIndex((post) => post.id === args.id)
+
+      if (postIndex === -1) {
+        throw new Error('Post not Found')
+      }
+
+      const deletedPosts = posts.splice(postIndex, 1)
+
+      comments = comments.filter((comment) => comment.author !== args.id)
+
+      return deletedPosts[0]
+    },
+    deleteComment(parent, args, ctx) {
+      const commentIndex = comments.findIndex(
+        (comment) => comment.id === args.id
+      )
+
+      if (commentIndex === -1) {
+        throw new Error('Comment not found')
+      }
+
+      const deletedComments = comments.splice(commentIndex, 1)
+
+      return deletedComments[0]
     },
   },
   Post: {
@@ -294,7 +258,7 @@ const resolvers = {
 
 // crear instancia de graphql para levantar el servidor
 const server = new GraphQLServer({
-  typeDefs,
+  typeDefs: './src/schema.graphql',
   resolvers,
 })
 
