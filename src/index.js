@@ -1,19 +1,22 @@
-import { GraphQLServer } from 'graphql-yoga'
+import { GraphQLServer, PubSub } from 'graphql-yoga'
 import db from './db'
 import Query from './resolvers/Query'
 import Mutation from './resolvers/Mutations'
+import Subscription from './resolvers/Subscription'
 import User from './resolvers/User'
 import Post from './resolvers/Post'
 import Comment from './resolvers/Comment'
 // Type definitions (schema)
 // Tipos de datos - Scalar types - String, Boolean, Int, Float (numeros decimales), ID
 
+const pubsub = new PubSub()
 // Resolvers
 const resolvers = {
   Query,
   Mutation,
   User,
   Post,
+  Subscription,
   Comment,
 }
 
@@ -23,6 +26,7 @@ const server = new GraphQLServer({
   resolvers,
   context: {
     db,
+    pubsub,
   },
 })
 
