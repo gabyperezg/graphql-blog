@@ -22,11 +22,13 @@ let comments = [
 let users = [
   {
     name: 'Gaby',
+    email: 'gaby@email.com',
     age: '30',
     id: '1',
   },
   {
     name: 'Gina',
+    email: 'gina@email.com',
     age: '34',
     id: '2',
   },
