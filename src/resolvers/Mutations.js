@@ -42,8 +42,7 @@ const Mutation = {
   updateUser(parent, args, { db }, info) {
     const { id, data } = args
     const user = db.users.find((user) => user.id === id)
-    console.log(user)
-    console.log(data)
+      
     if (!user) {
       throw new Error('user not found')
     }
@@ -95,16 +94,26 @@ const Mutation = {
       throw new Error('Post not Found')
     }
 
-    const deletedPosts = db.posts.splice(postIndex, 1)
+    const [post] = db.posts.splice(postIndex, 1)
 
-    comments = db.comments.filter((comment) => comment.author !== args.id)
+    db.comments = db.comments.filter((comment) => comment.author !== args.id)
 
-    return deletedPosts[0]
+    if(post.publised){
+      pubsub.publish(`post`,{
+        post:{
+          mutation: 'DELETED',
+          data: post
+        }
+      } )
+    }
+
+    return post
   },
-  updatePost(parent, args, { db }, info) {
+  updatePost(parent, args, { db,pubsub }, info) {
     const { id, data } = args
     const post = db.posts.find((post) => post.id === id)
 
+    const originalPost = {...post}
     if (!post) {
       throw new Error('Post not found')
     }
@@ -116,6 +125,32 @@ const Mutation = {
     }
     if (typeof data.published === 'boolean') {
       post.published = data.published
+
+      if(originalPost.published && !post.published){
+        //deleted
+        pubsub.publish('post',{
+          post:{
+            mutation: 'DELETED',
+            data: originalPost
+          }
+        })
+      }else if (!originalPost.published && post.published){
+        //created
+        pubsub.publish('post',{
+          post:{
+            mutation: 'CREATED',
+            data: post
+          }
+        })
+      }
+    }else if (post.published){
+      //updated
+      pubsub.publish('post',{
+        post:{
+          mutation: 'UPDATED',
+          data: post
+        }
+      })
     }
 
     return post

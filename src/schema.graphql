@@ -72,14 +72,15 @@ type Post {
   comments: [Comment!]
 }
 
-type PostSubscriptionPayload {
-  mutation: String!
-  data: Post!
-}
 
 type Comment {
   text: String!
   id: ID!
   author: User!
   post: Post!
+}
+
+type PostSubscriptionPayload {
+  mutation: String!
+  data: Post!
 }
