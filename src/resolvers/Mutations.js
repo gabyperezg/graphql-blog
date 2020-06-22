@@ -144,7 +144,7 @@ const Mutation = {
         })
       }
 
-      //somechange
+     
     }else if (post.published){
       //updated
       pubsub.publish('post',{
